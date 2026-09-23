@@ -20,7 +20,11 @@ async function main() {
 
   await prisma.user.upsert({
     where: { username: "admin" },
-    update: {},
+    update: {
+      nama: "Administrator",
+      password,
+      role: Role.ADMIN
+    },
     create: {
       username: "admin",
       nama: "Administrator",
@@ -31,7 +35,12 @@ async function main() {
 
   await prisma.user.upsert({
     where: { username: "pembimbing01" },
-    update: {},
+    update: {
+      nama: "Bapak Contoh",
+      password,
+      role: Role.PEMBIMBING,
+      sekolah: "SMKN 1 Sidayu"
+    },
     create: {
       username: "pembimbing01",
       nama: "Bapak Contoh",
@@ -43,7 +52,16 @@ async function main() {
 
   const siswa = await prisma.user.upsert({
     where: { username: "siswa01" },
-    update: {},
+    update: {
+      nama: "Ahmad",
+      password,
+      role: Role.SISWA,
+      kelas: "XII TITL 1",
+      jurusan: "Teknik Instalasi Tenaga Listrik",
+      sekolah: "SMKN 1 Sidayu",
+      tempat_pkl: "PT Contoh",
+      pembimbing: "Bapak Contoh"
+    },
     create: {
       username: "siswa01",
       nama: "Ahmad",

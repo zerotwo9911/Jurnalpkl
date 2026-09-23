@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import Clock from "@/components/Clock";
 import Link from "next/link";
-import Icon, { IconName } from "@/components/Icons";
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -42,10 +41,10 @@ export default async function Dashboard() {
       </section>
 
       <div className="stat-grid">
-        <Stat n={total} label="Total Jurnal" icon="journal" />
-        <Stat n={approved} label="Jurnal Disetujui" icon="check" />
-        <Stat n={pending} label="Menunggu Persetujuan" icon="clock" />
-        <Stat n={revision} label="Perlu Revisi" icon="alert" />
+        <Stat n={total} label="Total Jurnal" icon="📝" />
+        <Stat n={approved} label="Jurnal Disetujui" icon="✓" />
+        <Stat n={pending} label="Menunggu Persetujuan" icon="◷" />
+        <Stat n={revision} label="Perlu Revisi" icon="!" />
       </div>
 
       <section className="today-card glass">
@@ -60,6 +59,6 @@ export default async function Dashboard() {
   </AppShell>;
 }
 
-function Stat({ n, label, icon }: { n: number; label: string; icon: IconName }) {
-  return <div className="stat-card glass"><span className="stat-icon"><Icon name={icon} size={22} /></span><strong>{n}</strong><span>{label}</span></div>;
+function Stat({ n, label, icon }: { n: number; label: string; icon: string }) {
+  return <div className="stat-card glass"><span className="stat-icon">{icon}</span><strong>{n}</strong><span>{label}</span></div>;
 }

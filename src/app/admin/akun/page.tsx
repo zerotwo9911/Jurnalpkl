@@ -3,7 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
-import Icon from "@/components/Icons";
 
 export default function AdminAkunPage() {
   const router = useRouter();
@@ -68,8 +67,8 @@ export default function AdminAkunPage() {
 
           <form onSubmit={submit}>
             <div className="role-switch">
-              <button type="button" className={role === "SISWA" ? "role-option active" : "role-option"} onClick={() => setRole("SISWA")}><Icon name="student" /> Siswa</button>
-              <button type="button" className={role === "PEMBIMBING" ? "role-option active" : "role-option"} onClick={() => setRole("PEMBIMBING")}><Icon name="teacher" /> Pembimbing</button>
+              <button type="button" className={role === "SISWA" ? "role-option active" : "role-option"} onClick={() => setRole("SISWA")}>👨‍🎓 Siswa</button>
+              <button type="button" className={role === "PEMBIMBING" ? "role-option active" : "role-option"} onClick={() => setRole("PEMBIMBING")}>🧑‍🏫 Pembimbing</button>
             </div>
 
             <div className="form-grid account-grid">
