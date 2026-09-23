@@ -67,8 +67,8 @@ export default function AdminAkunPage() {
 
           <form onSubmit={submit}>
             <div className="role-switch">
-              <button type="button" className={role === "SISWA" ? "role-option active" : "role-option"} onClick={() => setRole("SISWA")}>👨‍🎓 Siswa</button>
-              <button type="button" className={role === "PEMBIMBING" ? "role-option active" : "role-option"} onClick={() => setRole("PEMBIMBING")}>🧑‍🏫 Pembimbing</button>
+              <button type="button" className={role === "SISWA" ? "role-option active" : "role-option"} onClick={() => setRole("SISWA")}>Siswa</button>
+              <button type="button" className={role === "PEMBIMBING" ? "role-option active" : "role-option"} onClick={() => setRole("PEMBIMBING")}>Pembimbing</button>
             </div>
 
             <div className="form-grid account-grid">

@@ -1,0 +1,12 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import AppShell from "@/components/AppShell";
+
+export default async function Profile(){
+ const session=await getSession(); if(!session) redirect("/login");
+ const user=await prisma.user.findUnique({where:{id:session.id}});
+ if(!user) redirect("/login");
+ const fields=[["Nama",user.nama],["Username",user.username],["Role",user.role],["Kelas",user.kelas],["Jurusan",user.jurusan],["Sekolah",user.sekolah],["Tempat PKL",user.tempat_pkl],["Pembimbing",user.pembimbing]];
+ return <AppShell role={session.role} title="Profil"><div className="page"><div className="detail-head"><div><span className="eyebrow">AKUN</span><h1>Profil</h1><p className="muted">Informasi akun dan data PKL Anda.</p></div></div><section className="profile-card"><div className="profile-avatar">JP</div><div className="profile-fields">{fields.map(([label,value])=><div key={label}><small>{label}</small><strong>{value||"-"}</strong></div>)}</div></section></div></AppShell>;
+}

@@ -50,13 +50,13 @@ export default function LoginPage() {
         <label>Password</label>
         <div className="password-wrap">
           <input type={show ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Masukkan password" autoComplete="current-password" />
-          <button type="button" className="eye" onClick={() => setShow(!show)}>{show ? "🙈" : "👁"}</button>
+          <button type="button" className="eye" onClick={() => setShow(!show)}>{show ? "Sembunyikan" : "Tampilkan"}</button>
         </div>
 
         {error && <div className="error-box">{error}</div>}
         <button className="primary-btn" disabled={loading}>{loading ? "MEMPROSES..." : "MASUK →"}</button>
 
-        <div className="demo-hint">Demo: siswa01 / 12345678</div>
+        
       </form>
     </main>
   );

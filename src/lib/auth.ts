@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "development-secret-change-me"
-);
+const authSecret = process.env.AUTH_SECRET;
+if (!authSecret) throw new Error("AUTH_SECRET wajib diatur di environment.");
+const secret = new TextEncoder().encode(authSecret);
 
 export type Session = {
   id: number;
