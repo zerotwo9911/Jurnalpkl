@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Icon from "@/components/Icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function LoginPage() {
         <label>Password</label>
         <div className="password-wrap">
           <input type={show ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Masukkan password" autoComplete="current-password" />
-          <button type="button" className="eye" onClick={() => setShow(!show)}>{show ? "🙈" : "👁"}</button>
+          <button type="button" className="eye" aria-label={show ? "Sembunyikan password" : "Tampilkan password"} onClick={() => setShow(!show)}><Icon name={show ? "eyeOff" : "eye"} /></button>
         </div>
 
         {error && <div className="error-box">{error}</div>}

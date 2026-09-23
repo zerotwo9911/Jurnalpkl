@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
+import Icon from "@/components/Icons";
 
 export default async function Notifications() {
   const session = await getSession();
@@ -10,6 +11,6 @@ export default async function Notifications() {
 
   return <AppShell role={session.role} title="Notifikasi"><div className="page">
     <div className="page-heading"><div><span className="eyebrow">PUSAT INFORMASI</span><h1>Notifikasi</h1></div><span className="pill">{data.filter(x => !x.is_read).length} belum dibaca</span></div>
-    <div className="notification-list">{data.map(n => <div className={`notification glass ${!n.is_read ? "unread" : ""}`} key={n.id}><div className="notif-icon">🔔</div><div><b>{n.title}</b><p>{n.message}</p><small>{n.created_at.toLocaleString("id-ID")}</small></div></div>)}</div>
+    <div className="notification-list">{data.map(n => <div className={`notification glass ${!n.is_read ? "unread" : ""}`} key={n.id}><div className="notif-icon"><Icon name="bell" /></div><div><b>{n.title}</b><p>{n.message}</p><small>{n.created_at.toLocaleString("id-ID")}</small></div></div>)}</div>
   </div></AppShell>;
 }

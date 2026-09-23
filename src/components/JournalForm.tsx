@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Icon from "@/components/Icons";
 
 type Shift = { id: number; name: string; start_time: string; end_time: string };
 
@@ -42,7 +43,7 @@ export default function JournalForm({ onSaved }: { onSaved?: () => void }) {
     const data = await res.json();
     setSaving(false);
     if (!res.ok) { setMsg(data.error || "Jurnal gagal disimpan."); return; }
-    setMsg(status === "DRAFT" ? "✓ Draft tersimpan" : "✓ Jurnal dikirim untuk persetujuan");
+    setMsg(status === "DRAFT" ? "Draft tersimpan" : "Jurnal dikirim untuk persetujuan");
     onSaved?.();
   }
 
@@ -68,7 +69,7 @@ export default function JournalForm({ onSaved }: { onSaved?: () => void }) {
     {msg && <div className="success-box">{msg}</div>}
     <div className="action-row">
       <button className="secondary-btn" disabled={saving || activity.length < 5} onClick={() => save("DRAFT")}>SIMPAN DRAFT</button>
-      <button className="primary-btn" disabled={saving || activity.length < 5} onClick={() => save("MENUNGGU_PERSETUJUAN")}>{saving ? "MENYIMPAN..." : "KIRIM UNTUK PERSETUJUAN →"}</button>
+      <button className="primary-btn" disabled={saving || activity.length < 5} onClick={() => save("MENUNGGU_PERSETUJUAN")}>{saving ? "MENYIMPAN..." : <>KIRIM UNTUK PERSETUJUAN <Icon name="arrowRight" size={16} /></>}</button>
     </div>
   </section>;
 }
