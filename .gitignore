@@ -8,8 +8,6 @@ out/
 *.log
 .DS_Store
 npm-debug.log*
-JURNAL-PKL-MODERN-ICONS.zip
-*.tsbuildinfo
 
 # Prisma local artifacts
 prisma/*.db
