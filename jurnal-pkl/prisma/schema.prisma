@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SISWA
+  PEMBIMBING
+}
+
+enum JournalStatus {
+  DRAFT
+  MENUNGGU_PERSETUJUAN
+  DISETUJUI
+  PERLU_REVISI
+}
+
+enum ApprovalStatus {
+  DISETUJUI
+  PERLU_REVISI
+}
+
+enum NotificationType {
+  SYSTEM
+  JURNAL
+  APPROVAL
+  REVISI
+  PENGINGAT
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  nama        String
+  password    String
+  role        Role      @default(SISWA)
+  kelas       String?
+  jurusan     String?
+  sekolah     String?
+  tempat_pkl  String?
+  pembimbing  String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  journals    Journal[]
+  notifications Notification[]
+}
+
+model Shift {
+  id          Int       @id @default(autoincrement())
+  name        String
+  start_time  String
+  end_time    String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  journals    Journal[]
+}
+
+model Journal {
+  id                 Int           @id @default(autoincrement())
+  user_id            Int
+  shift_id           Int
+  date               DateTime
+  start_time         String
+  end_time           String
+  activity           String
+  description        String?
+  status             JournalStatus @default(DRAFT)
+  supervisor_note    String?
+  approved_at        DateTime?
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+  user               User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  shift              Shift         @relation(fields: [shift_id], references: [id])
+  approvals          SupervisorApproval[]
+
+  @@index([user_id, date])
+  @@index([status])
+}
+
+model Notification {
+  id           Int              @id @default(autoincrement())
+  user_id      Int
+  title        String
+  message      String
+  type         NotificationType @default(JURNAL)
+  is_read      Boolean          @default(false)
+  scheduled_at DateTime?
+  created_at   DateTime         @default(now())
+  user         User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, is_read])
+}
+
+model SupervisorApproval {
+  id              Int            @id @default(autoincrement())
+  journal_id      Int
+  supervisor_name String
+  status          ApprovalStatus
+  note            String?
+  approved_at     DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  journal         Journal        @relation(fields: [journal_id], references: [id], onDelete: Cascade)
+
+  @@index([journal_id])
+}
