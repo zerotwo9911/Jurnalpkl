@@ -1,11 +1,1 @@
-"use client";
-import { useState } from "react";
-import JournalForm from "./JournalForm";
-import JournalList from "./JournalList";
-export default function JournalWorkspace({role}:{role:string}){
- const [adding,setAdding]=useState(false);
- return <>{role==="SISWA"&&<div className="journal-toolbar"><div><h1>Jurnal PKL</h1><p className="muted">Catat dan kelola kegiatan Praktik Kerja Lapangan Anda.</p></div><button className="primary-btn" onClick={()=>setAdding(true)}>+ Tambah Jurnal</button></div>}
- {role!=="SISWA"&&<div className="journal-toolbar"><div><h1>Jurnal PKL</h1><p className="muted">{role==="ADMIN"?"Pantau seluruh jurnal siswa.":"Pantau jurnal siswa yang menjadi tanggung jawab Anda."}</p></div></div>}
- {adding&&<JournalForm onCancel={()=>setAdding(false)} onSaved={()=>{setAdding(false);window.location.reload()}}/>}
- <JournalList role={role}/></>;
-}
+"use client";import{useEffect,useState}from"react";import{useSearchParams}from"next/navigation";import JournalForm from"./JournalForm";import JournalList from"./JournalList";export default function JournalWorkspace({role}:{role:string}){const[adding,setAdding]=useState(false),params=useSearchParams();useEffect(()=>{if(role==="SISWA"&&params.get("new")==="1")setAdding(true)},[params,role]);return <>{<div className="journal-toolbar"><div><h1>Jurnal PKL</h1><p className="muted">{role==="SISWA"?"Catat dan kelola kegiatan Praktik Kerja Lapangan Anda.":role==="ADMIN"?"Pantau seluruh jurnal siswa.":"Pantau jurnal siswa yang menjadi tanggung jawab Anda."}</p></div>{role==="SISWA"&&<button className="primary-btn" onClick={()=>setAdding(true)}>Tambah Jurnal</button>}</div>}{adding&&<JournalForm onCancel={()=>setAdding(false)} onSaved={()=>{setAdding(false);window.location.reload()}}/>}<JournalList role={role}/></>}

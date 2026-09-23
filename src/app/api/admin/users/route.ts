@@ -3,55 +3,9 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-
-const schema = z.object({
-  nama: z.string().trim().min(2, "Nama minimal 2 karakter.").max(100),
-  username: z.string().trim().min(3, "Username minimal 3 karakter.").max(50).regex(/^[a-zA-Z0-9._-]+$/, "Username hanya boleh berisi huruf, angka, titik, garis bawah, atau tanda hubung."),
-  password: z.string().min(6, "Password minimal 6 karakter.").max(100),
-  role: z.enum(["SISWA", "PEMBIMBING"]),
-  kelas: z.string().trim().max(100).optional(),
-  jurusan: z.string().trim().max(150).optional(),
-  sekolah: z.string().trim().max(150).optional(),
-  tempat_pkl: z.string().trim().max(150).optional(),
-  pembimbing: z.string().trim().max(100).optional()
-});
-
-export async function POST(req: Request) {
-  const session = await getSession();
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ error: "Hanya admin yang dapat membuat akun." }, { status: 403 });
-  }
-
-  try {
-    const body = schema.parse(await req.json());
-    const username = body.username.toLowerCase();
-
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
-      return NextResponse.json({ error: "Username sudah digunakan. Silakan pilih username lain." }, { status: 409 });
-    }
-
-    const password = await bcrypt.hash(body.password, 12);
-    const user = await prisma.user.create({
-      data: {
-        nama: body.nama,
-        username,
-        password,
-        role: body.role,
-        kelas: body.role === "SISWA" ? body.kelas || null : null,
-        jurusan: body.role === "SISWA" ? body.jurusan || null : null,
-        sekolah: body.sekolah || null,
-        tempat_pkl: body.role === "SISWA" ? body.tempat_pkl || null : null,
-        pembimbing: body.role === "SISWA" ? body.pembimbing || null : null
-      },
-      select: { id: true, nama: true, username: true, role: true }
-    });
-
-    return NextResponse.json({ ok: true, user });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0]?.message || "Data tidak valid." }, { status: 400 });
-    }
-    return NextResponse.json({ error: "Gagal membuat akun." }, { status: 500 });
-  }
-}
+const schema=z.object({nama:z.string().trim().min(2).max(100),username:z.string().trim().min(3).max(50).regex(/^[a-zA-Z0-9._-]+$/),password:z.string().min(6).max(100).optional(),role:z.enum(["SISWA","PEMBIMBING"]),kelas:z.string().trim().max(100).optional(),jurusan:z.string().trim().max(150).optional(),sekolah:z.string().trim().max(150).optional(),tempat_pkl_id:z.number().int().positive().nullable().optional(),pembimbing_id:z.number().int().positive().nullable().optional()});
+async function admin(){const s=await getSession();return s?.role==="ADMIN"?s:null}
+export async function GET(req:Request){if(!await admin())return NextResponse.json({error:"Akses ditolak."},{status:403});const q=new URL(req.url).searchParams.get("q")?.trim()||"";const role=new URL(req.url).searchParams.get("role");const where:any={role:role==="SISWA"||role==="PEMBIMBING"?role:undefined};if(q)where.OR=[{nama:{contains:q,mode:"insensitive"}},{username:{contains:q,mode:"insensitive"}}];const users=await prisma.user.findMany({where,orderBy:{nama:"asc"},include:{tempat:true,supervisor:{select:{id:true,nama:true}},_count:{select:{journals:true}}}});return NextResponse.json(users)}
+export async function POST(req:Request){if(!await admin())return NextResponse.json({error:"Akses ditolak."},{status:403});try{const b=schema.parse(await req.json());const username=b.username.toLowerCase();if(await prisma.user.findUnique({where:{username}}))return NextResponse.json({error:"Username sudah digunakan."},{status:409});const password=await bcrypt.hash(b.password||"12345678",12);const sup=b.role==="SISWA"&&b.pembimbing_id?await prisma.user.findFirst({where:{id:b.pembimbing_id,role:"PEMBIMBING"}}):null;const place=b.role==="SISWA"&&b.tempat_pkl_id?await prisma.tempatPkl.findUnique({where:{id:b.tempat_pkl_id}}):null;if(b.role==="SISWA"&&b.pembimbing_id&&!sup)return NextResponse.json({error:"Pembimbing tidak valid."},{status:400});if(b.role==="SISWA"&&b.tempat_pkl_id&&!place)return NextResponse.json({error:"Tempat PKL tidak valid."},{status:400});const user=await prisma.user.create({data:{nama:b.nama,username,password,role:b.role,kelas:b.role==="SISWA"?b.kelas||null:null,jurusan:b.role==="SISWA"?b.jurusan||null:null,sekolah:b.sekolah||null,tempat_pkl:b.role==="SISWA"?place?.nama||null:null,pembimbing:b.role==="SISWA"?sup?.nama||null:null,tempat_pkl_id:b.role==="SISWA"?b.tempat_pkl_id||null:null,pembimbing_id:b.role==="SISWA"?b.pembimbing_id||null:null},select:{id:true,nama:true,username:true,role:true}});return NextResponse.json({ok:true,user})}catch(e){if(e instanceof z.ZodError)return NextResponse.json({error:e.issues[0]?.message||"Data tidak valid."},{status:400});return NextResponse.json({error:"Gagal membuat akun."},{status:500})}}
+export async function PATCH(req:Request){if(!await admin())return NextResponse.json({error:"Akses ditolak."},{status:403});try{const id=Number(new URL(req.url).searchParams.get("id"));if(!Number.isInteger(id))throw new Error("ID tidak valid");const raw=await req.json();const b=schema.partial().extend({id:z.number().int().positive()}).parse({...raw,id});const existing=await prisma.user.findUnique({where:{id}});if(!existing||existing.role=== "ADMIN")return NextResponse.json({error:"Pengguna tidak ditemukan."},{status:404});const data:any={nama:b.nama,username:b.username?.toLowerCase(),role:b.role,kelas:b.role==="SISWA"?b.kelas||null:null,jurusan:b.role==="SISWA"?b.jurusan||null:null,sekolah:b.sekolah||null,tempat_pkl_id:b.role==="SISWA"?b.tempat_pkl_id||null:null,pembimbing_id:b.role==="SISWA"?b.pembimbing_id||null:null};if(b.password)data.password=await bcrypt.hash(b.password,12);if(b.role==="SISWA"){const [sup,place]=await Promise.all([b.pembimbing_id?prisma.user.findFirst({where:{id:b.pembimbing_id,role:"PEMBIMBING"}}):null,b.tempat_pkl_id?prisma.tempatPkl.findUnique({where:{id:b.tempat_pkl_id}}):null]);if(b.pembimbing_id&&!sup)return NextResponse.json({error:"Pembimbing tidak valid."},{status:400});if(b.tempat_pkl_id&&!place)return NextResponse.json({error:"Tempat PKL tidak valid."},{status:400});data.pembimbing=sup?.nama||null;data.tempat_pkl=place?.nama||null}else{data.pembimbing=null;data.tempat_pkl=null}const user=await prisma.user.update({where:{id},data,select:{id:true,nama:true,username:true,role:true}});return NextResponse.json({ok:true,user})}catch(e){return NextResponse.json({error:"Gagal memperbarui pengguna."},{status:400})}}
+export async function DELETE(req:Request){if(!await admin())return NextResponse.json({error:"Akses ditolak."},{status:403});const id=Number(new URL(req.url).searchParams.get("id"));const u=await prisma.user.findUnique({where:{id}});if(!u||u.role==="ADMIN")return NextResponse.json({error:"Pengguna tidak ditemukan."},{status:404});if(u.role==="SISWA"){const count=await prisma.journal.count({where:{user_id:id}});if(count>0)return NextResponse.json({error:"Siswa masih memiliki jurnal. Hapus atau arsipkan data jurnal terlebih dahulu."},{status:409})}await prisma.user.delete({where:{id}});return NextResponse.json({ok:true})}

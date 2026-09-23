@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   const where: Prisma.JournalWhereInput = {};
   if (session.role === "SISWA") where.user_id = session.id;
   if (session.role === "PEMBIMBING") {
-    where.user = { pembimbing: session.nama, role: "SISWA" };
+    where.user = { pembimbing_id: session.id, role: "SISWA" };
   }
   if (q) {
     where.OR = session.role === "SISWA"
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
     where,
     include: {
       shift: true,
-      user: { select: { id: true, nama: true, kelas: true, jurusan: true, tempat_pkl: true, pembimbing: true } }
+      user: { select: { id: true, nama: true, kelas: true, jurusan: true, tempat_pkl: true, pembimbing: true, tempat: true, supervisor: { select: { id: true, nama: true } } } }
     },
     orderBy: [{ date: "desc" }, { created_at: "desc" }]
   });
@@ -80,21 +80,15 @@ export async function POST(req: Request) {
       status: body.status
     };
 
-    const journal = body.id
-      ? await prisma.journal.update({ where: { id: body.id, user_id: session.id }, data })
-      : await prisma.journal.create({ data });
-
-    await prisma.notification.create({
-      data: {
-        user_id: session.id,
-        title: body.id ? "Jurnal berhasil diperbarui" : "Jurnal berhasil disimpan",
-        message: body.status === "TERKIRIM"
-          ? "Jurnal kegiatan PKL berhasil dikirim."
-          : "Jurnal kegiatan PKL tersimpan sebagai draft.",
-        type: "JURNAL"
-      }
-    });
-
+    let journal;
+    if (body.id) {
+      const existing = await prisma.journal.findFirst({ where: { id: body.id, user_id: session.id } });
+      if (!existing) return NextResponse.json({ error: "Jurnal tidak ditemukan." }, { status: 404 });
+      if (existing.status !== "DRAFT") return NextResponse.json({ error: "Jurnal yang sudah terkirim tidak dapat diedit." }, { status: 409 });
+      journal = await prisma.journal.update({ where: { id: body.id }, data });
+    } else {
+      journal = await prisma.journal.create({ data });
+    }
     return NextResponse.json(journal);
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0]?.message || "Data jurnal tidak valid." }, { status: 400 });
@@ -112,8 +106,5 @@ export async function DELETE(req: Request) {
   if (!journal) return NextResponse.json({ error: "Jurnal tidak ditemukan." }, { status: 404 });
 
   await prisma.journal.delete({ where: { id } });
-  await prisma.notification.create({
-    data: { user_id: session.id, title: "Jurnal dihapus", message: "Jurnal kegiatan PKL berhasil dihapus.", type: "JURNAL" }
-  });
   return NextResponse.json({ ok: true });
 }

@@ -1,10 +1,1 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
-
-export async function GET() {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const shifts = await prisma.shift.findMany({ orderBy: { id: "asc" } });
-  return NextResponse.json(shifts);
-}
+import{NextResponse}from"next/server";import{prisma}from"@/lib/prisma";import{getSession}from"@/lib/auth";export async function GET(){const s=await getSession();if(!s)return NextResponse.json({error:"Unauthorized"},{status:401});return NextResponse.json(await prisma.shift.findMany({where:{active:true},orderBy:{id:"asc"}}))}

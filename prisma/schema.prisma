@@ -18,12 +18,6 @@ enum JournalStatus {
   TERKIRIM
 }
 
-enum NotificationType {
-  SYSTEM
-  JURNAL
-  PENGINGAT
-}
-
 model User {
   id             Int       @id @default(autoincrement())
   username       String    @unique
@@ -35,10 +29,29 @@ model User {
   sekolah        String?
   tempat_pkl     String?
   pembimbing     String?
+  tempat_pkl_id  Int?
+  pembimbing_id  Int?
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
   journals       Journal[]
-  notifications  Notification[]
+  tempat         TempatPkl? @relation(fields: [tempat_pkl_id], references: [id], onDelete: SetNull)
+  supervisor     User? @relation("Supervisor", fields: [pembimbing_id], references: [id], onDelete: SetNull)
+  supervised     User[] @relation("Supervisor")
+  @@index([role])
+  @@index([pembimbing_id])
+  @@index([tempat_pkl_id])
+}
+
+model TempatPkl {
+  id              Int      @id @default(autoincrement())
+  nama            String
+  alamat          String?
+  kontak          String?
+  penanggung_jawab String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  siswa           User[]
+  @@index([nama])
 }
 
 model Shift {
@@ -46,6 +59,7 @@ model Shift {
   name        String
   start_time  String
   end_time    String
+  active      Boolean   @default(true)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   journals    Journal[]
@@ -65,21 +79,6 @@ model Journal {
   updated_at  DateTime      @updatedAt
   user        User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   shift       Shift         @relation(fields: [shift_id], references: [id])
-
   @@index([user_id, date])
   @@index([status])
-}
-
-model Notification {
-  id           Int              @id @default(autoincrement())
-  user_id      Int
-  title        String
-  message      String
-  type         NotificationType @default(JURNAL)
-  is_read      Boolean          @default(false)
-  scheduled_at DateTime?
-  created_at   DateTime         @default(now())
-  user         User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@index([user_id, is_read])
 }

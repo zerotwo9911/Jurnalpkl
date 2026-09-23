@@ -36,7 +36,7 @@ export default function JournalList({ role }: { role:string }) {
 
   return <div className="journal-list">
     <div className="filter-bar">
-      <div className="search-field"><span className="search-icon">⌕</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder={role==="SISWA"?"Cari kegiatan atau deskripsi...":"Cari kegiatan atau nama siswa..."} /></div>
+      <div className="search-field"><span className="search-icon">Cari</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder={role==="SISWA"?"Cari kegiatan atau deskripsi...":"Cari kegiatan atau nama siswa..."} /></div>
       <input className="filter-input" type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label="Filter bulan"/>
       <select className="filter-input" value={status} onChange={e=>setStatus(e.target.value)}><option value="">Semua status</option><option value="DRAFT">Draft</option><option value="TERKIRIM">Terkirim</option></select>
     </div>
@@ -47,7 +47,7 @@ export default function JournalList({ role }: { role:string }) {
         <div className="journal-card-top"><div><span className="journal-date">{new Intl.DateTimeFormat("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(new Date(j.date))}</span>{role!=="SISWA"&&<span className="journal-student">{j.user.nama} · {j.user.kelas||"Tanpa kelas"}</span>}</div><span className={`status ${j.status.toLowerCase()}`}>{j.status==="DRAFT"?"Draft":"Terkirim"}</span></div>
         <h3>{j.activity}</h3><p>{j.description||"Tidak ada deskripsi tambahan."}</p>
         <div className="journal-meta"><span>{j.start_time}–{j.end_time}</span><span>{j.shift.name}</span></div>
-        <div className="journal-actions"><Link className="text-btn" href={`/jurnal/${j.id}`}>Lihat Detail</Link>{role==="SISWA"&&j.status==="DRAFT"&&<button className="danger-text" onClick={()=>remove(j.id)}>Hapus</button>}</div>
+        <div className="journal-actions"><Link className="text-btn" href={`/jurnal/${j.id}`}>Lihat Detail</Link>{role==="SISWA"&&j.status==="DRAFT"&&<><Link className="text-btn" href={`/jurnal/${j.id}?edit=1`}>Edit</Link><button className="danger-text" onClick={()=>remove(j.id)}>Hapus</button></>}</div>
       </article>)}</div>}
   </div>;
 }

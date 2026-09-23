@@ -1,10 +1,2 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import AppShell from "@/components/AppShell";
-export default async function AdminSiswa(){
- const s=await getSession(); if(!s) redirect("/login"); if(s.role!=="ADMIN") redirect("/");
- const users=await prisma.user.findMany({where:{role:"PEMBIMBING"},orderBy:{nama:"asc"},include:{_count:{select:{journals:true}}}});
- return <AppShell role="ADMIN" title="Data Pembimbing"><div className="page"><div className="detail-head"><div><span className="eyebrow">DATA PEMBIMBING</span><h1>Data Pembimbing</h1><p className="muted">Kelola akun dan informasi pembimbing PKL.</p></div><Link className="primary-btn" href="/admin/akun">+ Tambah Pembimbing</Link></div><div className="student-table">{users.map(u=><div className="student-row" key={u.id}><div><b>{u.nama}</b><span>{u.username} · {u.kelas||"-"}</span></div><span>{u.tempat_pkl||"-"}</span><strong>{u._count.journals} jurnal</strong><span>{u.pembimbing||"-"}</span></div>)}{!users.length&&<div className="empty-state"><h3>Belum ada siswa</h3><p>Tambahkan akun siswa untuk mulai mengelola data.</p></div>}</div></div></AppShell>;
-}
+import {redirect} from "next/navigation";import{getSession}from"@/lib/auth";import AppShell from"@/components/AppShell";import UserManager from"@/components/admin/UserManager";
+export default async function Page(){const s=await getSession();if(!s)redirect("/login");if(s.role!=="ADMIN")redirect("/");return <AppShell role="ADMIN" title="Pembimbing"><div className="page"><div className="detail-head"><div><span className="eyebrow">DATA PEMBIMBING</span><h1>Data Pembimbing</h1><p className="muted">Kelola akun pembimbing dan siswa yang berada di bawah bimbingannya.</p></div></div><UserManager mode="PEMBIMBING"/></div></AppShell>}
